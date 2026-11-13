@@ -98,13 +98,15 @@ function bindNav() {
   document.addEventListener('click', (e) => { const a = e.target.closest('[data-go]'); if (!a) return; e.preventDefault(); goTo(a.dataset.go); });
   $('#burger').addEventListener('click', () => { const o = document.documentElement.classList.toggle('menu-open'); $('#burger').setAttribute('aria-expanded', String(o)); $('#mmenu').setAttribute('aria-hidden', String(!o)); });
   const nav = $('#nav'); const heroCopy = $('#heroCopy'), hideEls = $$('.hero-hide'), bgEl = $('#atmo .img'); const cap = $('#scissorsCap');
+  let docH = 1, introTop = 0, introH = 1; const measure = () => { docH = Math.max(1, document.documentElement.scrollHeight - innerHeight); const ie = $('#intro'); introTop = ie.offsetTop; introH = Math.max(1, ie.offsetHeight - innerHeight); };
+  measure(); addEventListener('resize', measure); addEventListener('load', measure); setTimeout(measure, 3000);
+  let lastNav = null;
   const onScroll = () => {
-    nav.classList.toggle('scrolled', scrollY > 40);
-    const h = clamp(scrollY / innerHeight);
-    for (const el of hideEls) { el.style.opacity = String(1 - sstep(0, 0.55, h)); }
-    heroCopy.style.transform = `translate3d(0,${-h * 60}px,0)`;
-    bgEl.style.transform = `translate3d(0,${-(scrollY / Math.max(1, document.documentElement.scrollHeight - innerHeight)) * 6}%,0) scale(1.14)`;
-    const ir = $('#intro').getBoundingClientRect(); const ip = clamp(-ir.top / (ir.height - innerHeight));
+    const y = scrollY; const sc = y > 40; if (sc !== lastNav) { lastNav = sc; nav.classList.toggle('scrolled', sc); }
+    const h = clamp(y / innerHeight);
+    if (h < 1.05) { for (const el of hideEls) { el.style.opacity = String(1 - sstep(0, 0.55, h)); } heroCopy.style.transform = `translate3d(0,${-h * 60}px,0)`; }
+    bgEl.style.transform = `translate3d(0,${-(y / docH) * 6}%,0) scale(1.14)`;
+    const ip = clamp((y - introTop) / introH);
     cap.style.opacity = String(sstep(0.35, 0.5, ip) * (1 - sstep(0.92, 1, ip)));
   };
   let sq = false; addEventListener('scroll', () => { if (!sq) { sq = true; requestAnimationFrame(() => { sq = false; onScroll(); }); } }, { passive: true }); onScroll();

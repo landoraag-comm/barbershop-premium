@@ -17,7 +17,9 @@ export function createStage(canvas, opts = {}) {
     renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
   } catch (e) { return null; }
   if (!renderer.getContext()) return null;
-  let maxDpr = mobile ? 2 : 1.6; let dpr = Math.min(devicePixelRatio || 1, maxDpr);
+  const budget = mobile ? 1.9e6 : 2.6e6; // max rendered pixels
+  const dprFor = () => Math.min(devicePixelRatio || 1, mobile ? 2 : 1.75, Math.sqrt(budget / (innerWidth * innerHeight)));
+  let maxDpr = dprFor(); let dpr = maxDpr; const minDpr = mobile ? 1.25 : 1;
   renderer.setPixelRatio(dpr);
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
   renderer.setClearColor(0x000000, 0);
@@ -77,7 +79,7 @@ export function createStage(canvas, opts = {}) {
   st.els = { hero: $('hero'), heroA: $('heroAnchor'), intro: $('intro'), scA: $('scissorsAnchor'), svc: $('servicos'), svcA: $('svcAnchor'), pole: $('poste'), poleA: $('poleAnchor'), book: $('agendar'), chairA: $('chairAnchor'), final: $('final'), finalA: $('finalAnchor') };
 
   function resize() {
-    st.vw = innerWidth; st.vh = innerHeight;
+    st.vw = innerWidth; st.vh = innerHeight; maxDpr = dprFor(); if (dpr > maxDpr) { dpr = maxDpr; renderer.setPixelRatio(dpr); }
     renderer.setSize(st.vw, st.vh, false);
     camera.aspect = st.vw / st.vh; camera.updateProjectionMatrix();
     st.visH = 2 * CAMZ * Math.tan(THREE.MathUtils.degToRad(FOV / 2)); st.visW = st.visH * camera.aspect;
@@ -237,8 +239,12 @@ export function createStage(canvas, opts = {}) {
     if (any) renderer.render(scene, camera); else if (st.frame % 30 === 0) renderer.clear();
     st.frame++;
     // dynamic resolution
-    if (dt > 0.028) st.slow++; else st.slow = Math.max(0, st.slow - 0.5);
-    if (st.slow > 45 && dpr > (mobile ? 1.5 : 1)) { dpr = Math.max(mobile ? 1.5 : 1, dpr - 0.25); renderer.setPixelRatio(dpr); renderer.setSize(st.vw, st.vh, false); st.slow = 0; }
+    // governor: average frame time over ~40 rendered frames, step resolution down fast and up slowly
+    if (any) { st.ft = (st.ft || 0.016) * 0.95 + dt * 0.05; st.gov = (st.gov || 0) + 1; }
+    if (st.gov > 40) { st.gov = 0;
+      const nd = st.ft > 0.021 ? Math.max(minDpr, dpr - 0.15) : (st.ft < 0.0135 ? Math.min(maxDpr, dpr + 0.1) : dpr);
+      if (Math.abs(nd - dpr) > 0.01) { dpr = nd; renderer.setPixelRatio(dpr); renderer.setSize(st.vw, st.vh, false); } }
+    if (false) { renderer.setPixelRatio(dpr); renderer.setSize(st.vw, st.vh, false); st.slow = 0; }
   }
   renderer.setAnimationLoop(frame);
   api.onPole = (fn) => { st.onPole = fn; };
