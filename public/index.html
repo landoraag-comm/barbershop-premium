@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Barber — Experience</title>
+<meta name="description" content="Barbearia premium: corte masculino, barba clássica e agendamento online. Precisão em cada detalhe, tradição em cada gesto.">
+<meta name="theme-color" content="#080808">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 fill=%22%23080808%22/%3E%3Ctext x=%2216%22 y=%2222%22 font-size=%2218%22 text-anchor=%22middle%22 fill=%22%23c48a5f%22 font-family=%22Georgia%22 font-style=%22italic%22%3EB%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js" defer></script>
+<script type="module" src="app.js"></script>
+</head>
+<body>
+<div id="atmo" aria-hidden="true"><div class="img"></div><div class="beam"></div></div>
+<canvas id="gl" aria-hidden="true"></canvas>
+<div class="vignette"></div><div class="grain"></div>
+<div id="loader" aria-live="polite" aria-label="Carregando">
+  <div class="ld-inner">
+    <div class="ld-pole">
+      <svg viewBox="0 0 80 300" aria-hidden="true">
+        <defs>
+          <linearGradient id="ldChrome" x1="0" x2="1"><stop offset="0" stop-color="#5d6066"/><stop offset=".35" stop-color="#f2f3f5"/><stop offset=".55" stop-color="#9a9da3"/><stop offset="1" stop-color="#3c3e42"/></linearGradient>
+          <linearGradient id="ldGlass" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".0"/><stop offset=".18" stop-color="#fff" stop-opacity=".35"/><stop offset=".3" stop-color="#fff" stop-opacity="0"/><stop offset=".82" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+          <clipPath id="ldTube"><rect x="18" y="58" width="44" height="184" rx="3"/></clipPath>
+          <clipPath id="ldFill"><rect id="ldFillRect" x="0" y="242" width="80" height="0"/></clipPath>
+          <filter id="ldGlow" x="-50%" y="-20%" width="200%" height="140%"><feGaussianBlur stdDeviation="6"/></filter>
+        </defs>
+        <rect id="ldAura" x="14" y="56" width="52" height="188" rx="8" fill="#ffd9b8" opacity="0" filter="url(#ldGlow)"/>
+        <g clip-path="url(#ldTube)"><rect x="18" y="58" width="44" height="184" fill="#121212"/><g class="ld-stripes dim"></g></g>
+        <g clip-path="url(#ldTube)"><g clip-path="url(#ldFill)"><rect x="18" y="58" width="44" height="184" fill="#f3efe6"/><g class="ld-stripes lit"></g></g></g>
+        <rect x="18" y="58" width="44" height="184" fill="url(#ldGlass)"/>
+        <path d="M22 40 Q22 6 40 6 Q58 6 58 40 Z" fill="url(#ldChrome)"/><rect x="10" y="40" width="60" height="11" rx="5.5" fill="url(#ldChrome)"/><rect x="16" y="50" width="48" height="8" fill="url(#ldChrome)" opacity=".85"/>
+        <rect x="16" y="242" width="48" height="8" fill="url(#ldChrome)" opacity=".85"/><rect x="10" y="249" width="60" height="11" rx="5.5" fill="url(#ldChrome)"/><path d="M22 260 Q22 294 40 294 Q58 294 58 260 Z" fill="url(#ldChrome)"/>
+      </svg>
+    </div>
+    <div class="ld-meta">
+      <div class="ld-num"><span id="ldNum">000</span><small>%</small></div>
+      <div class="ld-brand" data-biz="name">The Barber</div>
+      <div class="ld-step"><span id="ldStep">Afiando a navalha</span></div>
+    </div>
+  </div>
+</div>
+<div id="cur"><span></span></div>
+
+<nav class="top" id="nav" aria-label="Principal">
+  <a href="#hero" class="logo" data-go="hero"><span class="mark">B</span><span><span data-biz="name">The Barber</span><small>Experience</small></span></a>
+  <div class="navlinks">
+    <a class="l" href="#intro" data-go="intro">Experiência</a>
+    <a class="l" href="#servicos" data-go="servicos">Serviços</a>
+    <a class="l" href="#mestres" data-go="mestres">Profissionais</a>
+    <a class="l" href="#espaco" data-go="espaco">Espaço</a>
+    <a class="btn sm ghost magnetic" href="#agendar" data-go="agendar"><span class="t">Agendar horário</span><span class="shine"></span></a>
+  </div>
+  <button class="burger" id="burger" aria-label="Abrir menu" aria-expanded="false"><i></i><i></i></button>
+</nav>
+<div id="mmenu" aria-hidden="true">
+  <a href="#intro" data-go="intro"><small>01</small>Experiência</a>
+  <a href="#servicos" data-go="servicos"><small>02</small>Serviços</a>
+  <a href="#mestres" data-go="mestres"><small>03</small>Profissionais</a>
+  <a href="#espaco" data-go="espaco"><small>04</small>Espaço</a>
+  <a class="btn solid" href="#agendar" data-go="agendar"><span class="t">Agendar horário</span><span class="ar"></span></a>
+</div>
+
+<main>
+  <!-- 01 HERO -->
+  <section id="hero" data-sec="hero">
+    <div id="heroAnchor" class="anchor"><div class="fallback-art"></div></div>
+    <div class="copy hero-hide" id="heroCopy">
+      <div class="eyebrow fade" id="heroEye"><b>01</b><span class="rule"></span>The art of precision</div>
+      <h1 class="display xl lines" id="heroTitle"><span class="ln"><span>Mais que</span></span><span class="ln"><span>um corte.</span></span><span class="ln"><span><em>Uma assinatura.</em></span></span></h1>
+      <p class="lede fade" id="heroLede">Precisão em cada detalhe. Tradição em cada gesto. Uma experiência criada para homens que valorizam sua identidade.</p>
+      <div class="ctas fade" id="heroCtas">
+        <a href="#agendar" data-go="agendar" class="btn solid magnetic" data-cursor="Agendar"><span class="t">Reservar meu horário</span><span class="ar"></span></a>
+        <a href="#intro" data-go="intro" class="btn ghost magnetic"><span class="t">Explorar experiência</span><span class="shine"></span></a>
+      </div>
+    </div>
+    <div class="meta-col fade hero-hide" id="heroMeta"><span>Navalha <b>Nº 01</b></span><span>Aço inox · Cabo envernizado</span></div>
+    <div class="scrollcue fade hero-hide" id="scrollCue"><span>Role</span><i></i></div>
+  </section>
+
+  <!-- 02 INTRO -->
+  <section id="intro" data-sec="intro">
+    <div class="stick">
+      <div class="txt" data-reveal>
+        <div class="eyebrow fade"><b>02</b><span class="rule"></span>A tradição reinventada</div>
+        <h2 class="display lg lines"><span class="ln"><span>Tradição</span></span><span class="ln"><span>no gesto.</span></span><span class="ln"><span><em>Excelência</em> no resultado.</span></span></h2>
+        <p class="lede fade d1">Acreditamos que um bom corte nasce do tempo bem gasto: conversa, leitura do rosto, técnica apurada e acabamento feito à mão. Ferramentas clássicas, olhar contemporâneo.</p>
+        <div class="facts fade d2"><div><b>Navalha</b>precisão</div><div><b>Tesoura</b>técnica</div><div><b>Tempo</b>dedicado</div></div>
+      </div>
+      <div id="scissorsAnchor" class="anchor"><div class="fallback-art"></div></div>
+      <div class="ticks" aria-hidden="true"></div>
+      <span class="caption" id="scissorsCap" style="right:var(--pad);bottom:10vh;opacity:0">Tesoura · aço polido</span>
+    </div>
+  </section>
+
+  <!-- 03 SERVICES -->
+  <section id="servicos" data-sec="servicos">
+    <div class="sec-head" data-reveal>
+      <div>
+        <div class="eyebrow fade"><b>03</b><span class="rule"></span>Precision in every detail</div>
+        <h2 class="display lg lines"><span class="ln"><span>O ritual da</span></span><span class="ln"><span><em>perfeição.</em></span></span></h2>
+      </div>
+      <p class="lede fade d1">Cada serviço, uma experiência. Cada detalhe, uma escolha.</p>
+    </div>
+    <div class="svc-list" id="svcList"></div>
+    <div id="svcAnchor" class="anchor"></div>
+  </section>
+
+  <!-- 04 POLE -->
+  <section id="poste" data-sec="poste">
+    <div class="stick">
+      <div class="pole-l">
+        <div class="eyebrow"><b>04</b><span class="rule"></span>Barber pole experience</div>
+        <h2 class="display md lines" id="poleTitle"><span class="ln"><span>A tradição</span></span><span class="ln"><span><em>nunca para.</em></span></span></h2>
+        <p class="lede" style="margin-top:26px">Vermelho, branco e azul: há séculos, o sinal de que a cadeira está pronta e o ofício está em movimento.</p>
+      </div>
+      <div id="poleAnchor" class="anchor"><div class="fallback-art"></div></div>
+      <div id="poleDrag" data-cursor="Girar" data-cursor-mode="drag" aria-label="Arraste para girar o poste"></div>
+      <div class="prog" aria-hidden="true"><i id="poleBar"></i><span class="pc" id="polePct">000</span><span class="st" id="poleStage">Em repouso</span></div>
+      <div class="pole-r"><div class="display" id="poleReveal"><span>Um ícone.</span><span>Uma história.</span><span><em>Um legado.</em></span></div></div>
+      <div class="drag-hint" id="dragHint">Arraste para girar</div>
+    </div>
+  </section>
+
+  <!-- 05 BOOKING -->
+  <section id="agendar" data-sec="agendar">
+    <div>
+      <div class="head" data-reveal>
+        <div class="eyebrow fade"><b>05</b><span class="rule"></span>Reserve sua experiência</div>
+        <h2 class="display md lines"><span class="ln"><span>Seu próximo</span></span><span class="ln"><span>grande visual</span></span><span class="ln"><span><em>começa aqui.</em></span></span></h2>
+        <p class="lede fade d1">Escolha o serviço, encontre seu horário e deixe o restante com a gente.</p>
+      </div>
+      <div class="bk" id="bk">
+        <div class="mode-tag" id="modeTag"><i></i><span>Conectando agenda…</span></div>
+        <div class="step open" data-step="1"><div class="sh"><span class="k">i.</span><h4>Serviço</h4><span class="v" data-v></span></div><div class="sb"><div><div class="opts" id="optSvc"></div></div></div></div>
+        <div class="step locked" data-step="2" id="stepBarber"><div class="sh"><span class="k">ii.</span><h4>Profissional</h4><span class="v" data-v></span></div><div class="sb"><div><div class="opts" id="optBarber"></div></div></div></div>
+        <div class="step locked" data-step="3"><div class="sh"><span class="k">iii.</span><h4>Data</h4><span class="v" data-v></span></div><div class="sb"><div><div class="cal" id="cal"></div></div></div></div>
+        <div class="step locked" data-step="4"><div class="sh"><span class="k">iv.</span><h4>Horário</h4><span class="v" data-v></span></div><div class="sb"><div><div class="slots" id="slots"></div></div></div></div>
+        <div class="step locked" data-step="5"><div class="sh"><span class="k">v.</span><h4>Seus dados</h4><span class="v" data-v></span></div><div class="sb"><div>
+          <form class="fields" id="form" novalidate>
+            <div class="field"><input id="fName" placeholder=" " autocomplete="name" maxlength="60" required><label for="fName">Nome completo</label><div class="err" id="eName"></div></div>
+            <div class="field"><input id="fPhone" placeholder=" " autocomplete="tel" inputmode="tel" maxlength="16" required><label for="fPhone">Telefone / WhatsApp</label><div class="err" id="ePhone"></div></div>
+          </form>
+        </div></div></div>
+        <div class="actions"><button class="btn solid magnetic" id="btnConfirm" disabled><span class="t">Confirmar agendamento</span><span class="ar"></span></button><span class="msg" id="bkMsg" role="status"></span></div>
+      </div>
+      <div class="confirm" id="confirm" aria-live="polite">
+        <div class="seal"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12.5l5 5L20 6.5" stroke="#c48a5f" stroke-width="1.4"/></svg></div>
+        <div class="eyebrow" style="margin-bottom:18px"><b>Reserva confirmada</b><span class="rule"></span><span id="cCode"></span></div>
+        <h3>Sua cadeira<br><em style="font-style:italic;color:var(--copper-2)">está reservada.</em></h3>
+        <div class="ticket" id="ticket"></div>
+        <div class="actions" style="margin-top:28px">
+          <a class="btn solid magnetic" id="btnWa" href="#" target="_blank" rel="noopener"><span class="t">Enviar pelo WhatsApp</span><span class="ar"></span></a>
+          <button class="btn ghost" id="btnCopy"><span class="t">Copiar resumo</span></button>
+          <button class="btn ghost" id="btnNew"><span class="t">Novo agendamento</span></button>
+        </div>
+        <p class="lede" id="waNote" style="margin-top:18px;font-size:13px"></p>
+      </div>
+    </div>
+    <div id="chairCol"><div id="chairAnchor" class="anchor"><div class="fallback-art"></div></div><div class="chair-cap"><span>Cadeira <b id="chairState">em repouso</b></span><span>Couro · Cromo</span></div></div>
+  </section>
+
+  <!-- 06 SPACE -->
+  <section id="espaco" data-sec="espaco">
+    <div class="sec-head" data-reveal>
+      <div>
+        <div class="eyebrow fade"><b>06</b><span class="rule"></span>The space</div>
+        <h2 class="display lg lines"><span class="ln"><span>Não é apenas</span></span><span class="ln"><span><em>sobre cabelo.</em></span></span></h2>
+      </div>
+      <p class="lede fade d1">É sobre o tempo dedicado a você. O ambiente, a conversa, a técnica e o cuidado com cada detalhe.</p>
+    </div>
+    <div class="gal" id="gal"></div>
+  </section>
+
+  <!-- 07 MASTERS -->
+  <section id="mestres" data-sec="mestres">
+    <div class="sec-head" data-reveal>
+      <div>
+        <div class="eyebrow fade"><b>07</b><span class="rule"></span>The masters</div>
+        <h2 class="display lg lines"><span class="ln"><span>Mãos que</span></span><span class="ln"><span><em>criam estilo.</em></span></span></h2>
+      </div>
+      <p class="lede fade d1">Especialistas com assinatura própria. Escolha quem vai cuidar do seu visual e siga direto para a agenda.</p>
+    </div>
+    <div class="masters" id="masters"></div>
+    <p class="placeholder-note" id="mNote"></p>
+  </section>
+
+  <!-- 08 FINAL -->
+  <section id="final" data-sec="final">
+    <div class="stick">
+      <div id="finalAnchor" class="anchor"><div class="fallback-art"></div></div>
+      <div data-reveal>
+        <div class="eyebrow fade"><b>08</b><span class="rule"></span>The last cut</div>
+        <h2 class="display lg lines" style="margin-top:28px"><span class="ln"><span>Estilo não</span></span><span class="ln"><span>se improvisa.</span></span><span class="ln"><span><em>Se constrói.</em></span></span></h2>
+        <p class="fade d1">Seu próximo corte começa com uma decisão.</p>
+        <a href="#agendar" data-go="agendar" class="btn solid magnetic fade d2" data-cursor="Agendar"><span class="t">Agendar meu horário</span><span class="ar"></span><span class="shine"></span></a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="rodape">
+  <div class="fgrid">
+    <div>
+      <a href="#hero" data-go="hero" class="logo"><span class="mark">B</span><span><span data-biz="name">The Barber</span><small>Experience</small></span></a>
+      <p class="lede" style="margin-top:22px;font-size:14px">Barbearia clássica, experiência contemporânea.</p>
+    </div>
+    <div><h5>Navegação</h5><ul><li><a href="#intro" data-go="intro">Experiência</a></li><li><a href="#servicos" data-go="servicos">Serviços</a></li><li><a href="#mestres" data-go="mestres">Profissionais</a></li><li><a href="#espaco" data-go="espaco">Espaço</a></li><li><a href="#agendar" data-go="agendar">Agendar</a></li></ul></div>
+    <div><h5>Serviços</h5><ul id="fSvc"></ul></div>
+    <div><h5>Visite</h5><ul id="fInfo"></ul></div>
+  </div>
+  <div class="fbig" data-biz="name">The Barber</div>
+  <div class="fbot"><span>© <span id="yr"></span> <span data-biz="name">The Barber</span>. Todos os direitos reservados.</span><span>Precisão · Técnica · Tradição · <a href="#admin" data-admin class="adm-link">Área administrativa</a></span></div>
+</footer>
+
+
+</body>
+</html>

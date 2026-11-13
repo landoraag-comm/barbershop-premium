@@ -1,0 +1,73 @@
+rules_version = '2';
+// Regras do The Barber Experience
+// - Qualquer visitante lê a configuração pública e os horários ocupados (sem nome/telefone).
+// - Qualquer visitante pode CRIAR uma reserva válida; só administradores leem, alteram ou cancelam.
+// - Reserva duplicada é bloqueada no servidor: cada bloco de 5 minutos ocupado vira um documento em /locks,
+//   que só pode ser criado (nunca sobrescrito). Se dois clientes tentarem o mesmo horário, o segundo falha.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    function validDate(d) { return d is string && d.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'); }
+    function validSlot(d) {
+      return d.keys().hasOnly(['barberId', 'date', 'start', 'end', 'status', 'locks'])
+        && d.barberId is string && d.barberId.size() > 0 && d.barberId.size() <= 40
+        && validDate(d.date)
+        && d.start is int && d.end is int && d.start >= 0 && d.end > d.start && d.end <= 1440 && d.end - d.start <= 600
+        && d.status == 'confirmed'
+        && d.locks is list && d.locks.size() > 0 && d.locks.size() <= 150;
+    }
+    function slotAfter(id) { return getAfter(/databases/$(database)/documents/slots/$(id)).data; }
+
+    match /config/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /media/{docId}  { allow read: if true; allow write: if isAdmin(); }
+
+    // primeiro acesso: o primeiro usuário autenticado reivindica o painel (uma única vez)
+    match /meta/owner {
+      allow read: if true;
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if false;
+    }
+    match /admins/{uid} {
+      allow read: if request.auth != null && (request.auth.uid == uid || isAdmin());
+      allow create: if request.auth != null && (
+        isAdmin() ||
+        (uid == request.auth.uid
+          && !exists(/databases/$(database)/documents/meta/owner)
+          && getAfter(/databases/$(database)/documents/meta/owner).data.uid == uid));
+      allow update, delete: if isAdmin();
+    }
+
+    match /slots/{id} {
+      allow read: if true;
+      allow create: if validSlot(request.resource.data)
+        && existsAfter(/databases/$(database)/documents/bookings/$(id));
+      allow update, delete: if isAdmin();
+    }
+
+    match /bookings/{id} {
+      allow read: if isAdmin();
+      allow create: if request.resource.data.keys().hasOnly(['barberId', 'date', 'start', 'end', 'status', 'locks', 'serviceId', 'serviceName', 'barberName', 'name', 'phone', 'createdAt'])
+        && request.resource.data.name is string && request.resource.data.name.size() >= 3 && request.resource.data.name.size() <= 60
+        && request.resource.data.phone is string && request.resource.data.phone.matches('^[0-9]{10,11}$')
+        && request.resource.data.status == 'confirmed'
+        && slotAfter(id).start == request.resource.data.start
+        && slotAfter(id).end == request.resource.data.end
+        && slotAfter(id).barberId == request.resource.data.barberId
+        && slotAfter(id).date == request.resource.data.date;
+      allow update, delete: if isAdmin();
+    }
+
+    match /locks/{lockId} {
+      allow read: if isAdmin();
+      allow create: if request.resource.data.keys().hasOnly(['booking'])
+        && lockId in slotAfter(request.resource.data.booking).locks
+        && lockId.matches(slotAfter(request.resource.data.booking).barberId + '_' + slotAfter(request.resource.data.booking).date + '_[0-9]+');
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    match /{document=**} { allow read, write: if false; }
+  }
+}
